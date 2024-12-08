@@ -27,11 +27,9 @@ macro_rules! measure {
 }
 
 fn main() {
-
     let input = read_file("input/1.txt");
-    // measure!("1.1", d1_trebuchet::cal_trebuchet(&input)?);
+    measure!("1.1", d1_id_check::cal_distance(input));
     // measure!("1.2", d1_trebuchet::cal_trebuchet_str(&input)?);
-
 }
 
 fn read_file(path: &str) -> String {
