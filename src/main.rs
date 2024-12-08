@@ -2,7 +2,6 @@ mod day;
 
 use crate::day::*;
 
-#[allow(unused_imports)]
 use std::time::Instant;
 use std::{fs::File, io::Read};
 
@@ -30,6 +29,10 @@ fn main() {
     let input = read_file("input/1.txt");
     measure!("1.1", d1_id_check::cal_distance(&input));
     measure!("1.2", d1_id_check::cal_similarity(&input));
+
+    let input = read_file("input/2.txt");
+    measure!("2.1", d2_reports::count_safe(&input));
+    //measure!("2.2", d2_reports::cal_similarity(&input));
 }
 
 fn read_file(path: &str) -> String {

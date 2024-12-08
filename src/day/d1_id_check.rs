@@ -22,7 +22,7 @@ impl IdList {
     fn distance(&mut self) -> usize {
         self.list_a.sort();
         self.list_b.sort();
-
+        
         let mut sum = 0;
         for (&a, &b) in self.list_a.iter().zip(self.list_b.iter()) {
             let diff = a.abs_diff(b);
@@ -53,7 +53,7 @@ pub fn cal_similarity(input: &str) -> usize {
 
 #[cfg(test)]
 mod tests {
-    use crate::d1_id_check::{cal_distance, cal_similarity};
+    use super::*;
 
     #[test]
     fn test_day1() {
