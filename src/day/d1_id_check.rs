@@ -4,7 +4,7 @@ struct IdList {
 }
 
 impl IdList {
-    fn parse(input: String) -> Self {
+    fn parse(input: &str) -> Self {
         let mut list_a = Vec::new();
         let mut list_b = Vec::new();
         for line in input.lines() {
@@ -22,7 +22,7 @@ impl IdList {
     fn distance(&mut self) -> usize {
         self.list_a.sort();
         self.list_b.sort();
-        
+
         let mut sum = 0;
         for (&a, &b) in self.list_a.iter().zip(self.list_b.iter()) {
             let diff = a.abs_diff(b);
@@ -30,25 +30,40 @@ impl IdList {
         }
         sum
     }
+
+    fn similarity(&mut self) -> usize {
+        let mut sum = 0;
+        for value in self.list_a.iter() {
+            let count = self.list_b.iter().filter(|v| value.eq(v)).count();
+            sum += value * count;
+        }
+        sum
+    }
 }
 
-pub fn cal_distance(input: String) -> usize {
+pub fn cal_distance(input: &str) -> usize {
     let mut id_list = IdList::parse(input);
     id_list.distance()
 }
 
+pub fn cal_similarity(input: &str) -> usize {
+    let mut id_list = IdList::parse(input);
+    id_list.similarity()
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::d1_id_check::cal_distance;
+    use crate::d1_id_check::{cal_distance, cal_similarity};
 
     #[test]
-    fn test_check_id() {
+    fn test_day1() {
         let input = "3   4
 4   3
 2   5
 1   3
 3   9
 3   3";
-        assert_eq!(cal_distance(input.into()), 11);
+        assert_eq!(cal_distance(input), 11, "Failed 1.1");
+        assert_eq!(cal_similarity(input), 31, "Failed 1.2");
     }
 }
