@@ -40,7 +40,7 @@ fn main() {
 
     let input = read_file("input/4.txt");
     measure!("4.1", d4_ceres_search::count_xmas(&input));
-    //measure!("4.2", d3_mull_it_over::multiply_numbers_filtered(&input));
+    measure!("4.2", d4_ceres_search::count_x_mas(&input));
 }
 
 fn read_file(path: &str) -> String {

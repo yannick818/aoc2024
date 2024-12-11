@@ -1,8 +1,3 @@
-
-struct Words {
-    lines: Vec<String>,
-}
-
 const XMAS: &str = "XMAS";
 const SAMX: &str = "SAMX";
 
@@ -21,7 +16,7 @@ pub fn count_xmas(input: &str) -> usize {
             row.push(line.chars().nth(i).unwrap());
         }
         rows.push(row);
-    } 
+    }
     for row in &rows {
         counter += row.matches(XMAS).count();
         counter += row.matches(SAMX).count();
@@ -49,14 +44,14 @@ pub fn count_xmas(input: &str) -> usize {
         diagonal.push(diag);
     }
     //direction / from bottom/south
-    for start_col in 1..col_cnt-3 {
+    for start_col in 1..col_cnt - 3 {
         let mut diag = String::new();
         let start_row = row_cnt - 1;
         for step in 0..row_cnt.max(col_cnt) {
             let row = match start_row.checked_sub(step) {
                 Some(row) => row,
                 None => break,
-            }; 
+            };
             let col = start_col + step;
             let ch = match rows[row].chars().nth(col) {
                 Some(c) => c,
@@ -85,14 +80,14 @@ pub fn count_xmas(input: &str) -> usize {
         diagonal.push(diag);
     }
     // direction \ from bottom/south
-    for start_col in 0..col_cnt-1 {
+    for start_col in 0..col_cnt - 1 {
         let mut diag = String::new();
         let start_row = row_cnt - 1;
         for step in 0..row_cnt.max(col_cnt) {
             let row = match start_row.checked_sub(step) {
                 Some(row) => row,
                 None => break,
-            }; 
+            };
             let col = match start_col.checked_sub(step) {
                 Some(col) => col,
                 None => break,
@@ -106,6 +101,34 @@ pub fn count_xmas(input: &str) -> usize {
     for diag in diagonal {
         counter += diag.matches(XMAS).count();
         counter += diag.matches(SAMX).count();
+    }
+    counter
+}
+
+pub fn count_x_mas(input: &str) -> usize {
+    let rows: Vec<_> = input.lines().collect();
+    let mut counter = 0;
+    let row_cnt = rows.len();
+    let col_cnt = rows[0].chars().count();
+    for (r, row) in rows.iter().enumerate().skip(1).take(row_cnt - 2) {
+        for (c, ch) in row.chars().enumerate().skip(1).take(col_cnt - 2) {
+            if ch == 'A' {
+                let neighbours = [
+                    (r - 1, c - 1),
+                    (r + 1, c + 1),
+                    (r - 1, c + 1),
+                    (r + 1, c - 1),
+                ]
+                .map(|(r, c)| rows[r].chars().nth(c).unwrap());
+                match neighbours {
+                    ['M', 'S', 'M', 'S']
+                    | ['M', 'S', 'S', 'M']
+                    | ['S', 'M', 'M', 'S']
+                    | ['S', 'M', 'S', 'M'] => counter += 1,
+                    _ => {}
+                }
+            }
+        }
     }
     counter
 }
@@ -128,5 +151,6 @@ SAXAMASAAA
 MAMMMXMMMM
 MXMXAXMASX";
         assert_eq!(18, count_xmas(input));
+        assert_eq!(9, count_x_mas(input));
     }
 }
