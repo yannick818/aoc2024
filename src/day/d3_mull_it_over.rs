@@ -103,7 +103,7 @@ mod tests {
     #[test]
     fn test_multiply_filter() {
         let input = "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))";
-        assert_eq!(48, multiply_numbers_filtered(input), "3.2 failed");
+        assert_eq!(48, multiply_numbers_filtered(input));
     }
 
     #[test]

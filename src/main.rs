@@ -37,6 +37,10 @@ fn main() {
     let input = read_file("input/3.txt");
     measure!("3.1", d3_mull_it_over::multiply_numbers(&input));
     measure!("3.2", d3_mull_it_over::multiply_numbers_filtered(&input));
+
+    let input = read_file("input/4.txt");
+    measure!("4.1", d4_ceres_search::count_xmas(&input));
+    //measure!("4.2", d3_mull_it_over::multiply_numbers_filtered(&input));
 }
 
 fn read_file(path: &str) -> String {
