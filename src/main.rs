@@ -32,7 +32,7 @@ fn main() {
 
     let input = read_file("input/2.txt");
     measure!("2.1", d2_reports::count_safe(&input));
-    //measure!("2.2", d2_reports::cal_similarity(&input));
+    measure!("2.2", d2_reports::count_safe_tolerant(&input));
 }
 
 fn read_file(path: &str) -> String {

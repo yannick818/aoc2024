@@ -1,6 +1,4 @@
-
-
-struct Report(Vec<usize>);
+struct Report(Vec<isize>);
 
 struct Reports(Vec<Report>);
 
@@ -20,20 +18,27 @@ impl Reports {
     fn count_safe(&self) -> usize {
         self.0.iter().filter(|report| report.is_safe()).count()
     }
+
+    fn count_safe_tolerant(&self) -> usize {
+        self.0
+            .iter()
+            .filter(|report| report.is_safe_tolerate())
+            .count()
+    }
 }
 
 impl Report {
     fn is_safe(&self) -> bool {
         let mut levels = self.0.iter();
-        let mut last = levels.next().cloned().unwrap() as isize;
+        let mut last = levels.next().cloned().unwrap();
         let mut incr_state = None;
         for &level in levels {
-            let diff = level as isize - last;
+            let diff = level - last;
             if diff.abs() > 3 || diff == 0 {
                 return false;
             }
             match (incr_state, diff.is_positive()) {
-                (Some(prev_incr), incr) if prev_incr == incr => {},
+                (Some(prev_incr), incr) if prev_incr == incr => {}
                 (None, is_incr) => {
                     incr_state = Some(is_incr);
                 }
@@ -41,15 +46,34 @@ impl Report {
                     return false;
                 }
             }
-            last = level as isize;
+            last = level;
         }
         true
+    }
+
+    fn is_safe_tolerate(&self) -> bool {
+        if self.is_safe() {
+            return true;
+        }
+        for (i, _v) in self.0.iter().enumerate() {
+            let mut vec = self.0.clone();
+            vec.remove(i);
+            if Self(vec).is_safe() {
+                return true;
+            }
+        }
+        false
     }
 }
 
 pub fn count_safe(input: &str) -> usize {
     let reports = Reports::parse(input);
     reports.count_safe()
+}
+
+pub fn count_safe_tolerant(input: &str) -> usize {
+    let reports = Reports::parse(input);
+    reports.count_safe_tolerant()
 }
 
 #[cfg(test)]
@@ -64,7 +88,7 @@ mod tests {
 1 3 2 4 5
 8 6 4 4 1
 1 3 6 7 9";
-        assert_eq!(count_safe(input), 2);
+        assert_eq!(count_safe(input), 2, "2.1 failed");
+        assert_eq!(count_safe_tolerant(input), 4, "2.2 failed");
     }
 }
-

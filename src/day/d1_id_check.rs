@@ -22,7 +22,7 @@ impl IdList {
     fn distance(&mut self) -> usize {
         self.list_a.sort();
         self.list_b.sort();
-        
+
         let mut sum = 0;
         for (&a, &b) in self.list_a.iter().zip(self.list_b.iter()) {
             let diff = a.abs_diff(b);
@@ -63,7 +63,7 @@ mod tests {
 1   3
 3   9
 3   3";
-        assert_eq!(cal_distance(input), 11, "Failed 1.1");
-        assert_eq!(cal_similarity(input), 31, "Failed 1.2");
+        assert_eq!(cal_distance(input), 11, "1.1 failed");
+        assert_eq!(cal_similarity(input), 31, "1.2 failed");
     }
 }
