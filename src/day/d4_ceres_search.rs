@@ -1,106 +1,40 @@
-const XMAS: &str = "XMAS";
-const SAMX: &str = "SAMX";
-
+// maybe iterating over all X and move in every direction would be easier
 pub fn count_xmas(input: &str) -> usize {
     let mut counter = 0;
-    let lines: Vec<_> = input.lines().collect();
-    for line in &lines {
-        counter += line.matches(XMAS).count();
-        counter += line.matches(SAMX).count();
-    }
-
-    let mut rows = Vec::new();
-    for i in 0..lines[0].chars().count() {
-        let mut row = String::new();
-        for line in &lines {
-            row.push(line.chars().nth(i).unwrap());
+    let rows: Vec<_> = input.lines().collect();
+    for (r, row) in rows.iter().enumerate() {
+        for (c, ch) in row.chars().enumerate() {
+            if ch == 'X' {
+                let r = r as isize;
+                let c = c as isize;
+                #[allow(clippy::identity_op)] //for optics
+                [
+                    [(r + 1, c + 0), (r + 2, c + 0), (r + 3, c + 0)],
+                    [(r - 1, c + 0), (r - 2, c + 0), (r - 3, c + 0)],
+                    [(r + 0, c + 1), (r + 0, c + 2), (r + 0, c + 3)],
+                    [(r + 0, c - 1), (r + 0, c - 2), (r + 0, c - 3)],
+                    [(r + 1, c + 1), (r + 2, c + 2), (r + 3, c + 3)],
+                    [(r - 1, c - 1), (r - 2, c - 2), (r - 3, c - 3)],
+                    [(r + 1, c - 1), (r + 2, c - 2), (r + 3, c - 3)],
+                    [(r - 1, c + 1), (r - 2, c + 2), (r - 3, c + 3)],
+                ]
+                .map(|idx| {
+                    let mut iter = idx.iter().map(|(r, c)| {
+                        if *r < 0 || *c < 0 {
+                            return None;
+                        }
+                        rows.get(*r as usize)
+                            .and_then(|row| row.chars().nth(*c as usize))
+                    });
+                    let m = iter.next().unwrap();
+                    let a = iter.next().unwrap();
+                    let s = iter.next().unwrap();
+                    if let (Some('M'), Some('A'), Some('S')) = (m, a, s) {
+                        counter += 1
+                    }
+                });
+            }
         }
-        rows.push(row);
-    }
-    for row in &rows {
-        counter += row.matches(XMAS).count();
-        counter += row.matches(SAMX).count();
-    }
-
-    let mut diagonal = Vec::new();
-    let row_cnt = rows.len();
-    let col_cnt = lines.len();
-    // direction / from left/west
-    for start_row in 3..row_cnt {
-        let mut diag = String::new();
-        let start_col = 0;
-        for step in 0..row_cnt.max(col_cnt) {
-            let row = match start_row.checked_sub(step) {
-                Some(row) => row,
-                None => break,
-            };
-            let col = start_col + step;
-            let ch = match rows[row].chars().nth(col) {
-                Some(c) => c,
-                None => break,
-            };
-            diag.push(ch);
-        }
-        diagonal.push(diag);
-    }
-    //direction / from bottom/south
-    for start_col in 1..col_cnt - 3 {
-        let mut diag = String::new();
-        let start_row = row_cnt - 1;
-        for step in 0..row_cnt.max(col_cnt) {
-            let row = match start_row.checked_sub(step) {
-                Some(row) => row,
-                None => break,
-            };
-            let col = start_col + step;
-            let ch = match rows[row].chars().nth(col) {
-                Some(c) => c,
-                None => break,
-            };
-            diag.push(ch);
-        }
-        diagonal.push(diag);
-    }
-    // direction \ from right/east
-    for start_row in 3..row_cnt {
-        let mut diag = String::new();
-        let start_col = col_cnt - 1;
-        for step in 0..row_cnt.max(col_cnt) {
-            let row = match start_row.checked_sub(step) {
-                Some(row) => row,
-                None => break,
-            };
-            let col = match start_col.checked_sub(step) {
-                Some(col) => col,
-                None => break,
-            };
-            let ch = rows[row].chars().nth(col).unwrap();
-            diag.push(ch);
-        }
-        diagonal.push(diag);
-    }
-    // direction \ from bottom/south
-    for start_col in 0..col_cnt - 1 {
-        let mut diag = String::new();
-        let start_row = row_cnt - 1;
-        for step in 0..row_cnt.max(col_cnt) {
-            let row = match start_row.checked_sub(step) {
-                Some(row) => row,
-                None => break,
-            };
-            let col = match start_col.checked_sub(step) {
-                Some(col) => col,
-                None => break,
-            };
-            let ch = rows[row].chars().nth(col).unwrap();
-            diag.push(ch);
-        }
-        diagonal.push(diag);
-    }
-
-    for diag in diagonal {
-        counter += diag.matches(XMAS).count();
-        counter += diag.matches(SAMX).count();
     }
     counter
 }
