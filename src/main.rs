@@ -36,7 +36,7 @@ fn main() {
 
     let input = read_file("input/3.txt");
     measure!("3.1", d3_mull_it_over::multiply_numbers(&input));
-    //measure!("3.2", d2_reports::count_safe_tolerant(&input));
+    measure!("3.2", d3_mull_it_over::multiply_numbers_filtered(&input));
 }
 
 fn read_file(path: &str) -> String {
