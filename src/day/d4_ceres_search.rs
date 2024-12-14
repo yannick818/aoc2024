@@ -1,4 +1,3 @@
-// maybe iterating over all X and move in every direction would be easier
 pub fn count_xmas(input: &str) -> usize {
     let mut counter = 0;
     let rows: Vec<_> = input.lines().collect();
@@ -18,7 +17,8 @@ pub fn count_xmas(input: &str) -> usize {
                     [(r + 1, c - 1), (r + 2, c - 2), (r + 3, c - 3)],
                     [(r - 1, c + 1), (r - 2, c + 2), (r - 3, c + 3)],
                 ]
-                .map(|idx| {
+                .into_iter()
+                .for_each(|idx| {
                     let mut iter = idx.iter().map(|(r, c)| {
                         if *r < 0 || *c < 0 {
                             return None;

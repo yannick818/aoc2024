@@ -41,6 +41,10 @@ fn main() {
     let input = read_file("input/4.txt");
     measure!("4.1", d4_ceres_search::count_xmas(&input));
     measure!("4.2", d4_ceres_search::count_x_mas(&input));
+
+    let input = read_file("input/5.txt");
+    measure!("5.1", d5_print_queue::count_update(&input));
+    //measure!("5.2", d5_print_queue::count_x_mas(&input));
 }
 
 fn read_file(path: &str) -> String {
