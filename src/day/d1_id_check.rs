@@ -41,12 +41,12 @@ impl IdList {
     }
 }
 
-pub fn cal_distance(input: &str) -> usize {
+pub fn part_one(input: &str) -> usize {
     let mut id_list = IdList::parse(input);
     id_list.distance()
 }
 
-pub fn cal_similarity(input: &str) -> usize {
+pub fn part_two(input: &str) -> usize {
     let mut id_list = IdList::parse(input);
     id_list.similarity()
 }
@@ -63,7 +63,7 @@ mod tests {
 1   3
 3   9
 3   3";
-        assert_eq!(cal_distance(input), 11, "1.1 failed");
-        assert_eq!(cal_similarity(input), 31, "1.2 failed");
+        assert_eq!(part_one(input), 11, "1.1 failed");
+        assert_eq!(part_two(input), 31, "1.2 failed");
     }
 }

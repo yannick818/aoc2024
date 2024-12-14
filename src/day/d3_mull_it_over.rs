@@ -47,7 +47,7 @@ impl Instruction {
     }
 }
 
-pub fn multiply_numbers(input: &str) -> isize {
+pub fn part_one(input: &str) -> isize {
     let instuctions = Instruction::parse(input);
     let mut sum = 0;
     for instruction in instuctions.into_iter() {
@@ -58,7 +58,7 @@ pub fn multiply_numbers(input: &str) -> isize {
     sum
 }
 
-pub fn multiply_numbers_filtered(input: &str) -> isize {
+pub fn part_two(input: &str) -> isize {
     let instuctions = Instruction::parse(input);
     let mut sum = 0;
     let mut mul_enabled = true;
@@ -97,13 +97,13 @@ mod tests {
     #[test]
     fn test_multiply() {
         let input = "xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))";
-        assert_eq!(161, multiply_numbers(input));
+        assert_eq!(161, part_one(input));
     }
 
     #[test]
     fn test_multiply_filter() {
         let input = "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))";
-        assert_eq!(48, multiply_numbers_filtered(input));
+        assert_eq!(48, part_two(input));
     }
 
     #[test]

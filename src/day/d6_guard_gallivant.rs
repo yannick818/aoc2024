@@ -1,6 +1,7 @@
 use std::{
     collections::HashSet,
     fmt::{Debug, Write},
+    thread,
 };
 
 use Direction::*;
@@ -181,7 +182,7 @@ enum End {
     Exit,
 }
 
-pub fn count_positions(input: &str) -> usize {
+pub fn part_one(input: &str) -> usize {
     let mut guard = Guard::parse(input);
     let end = guard.walk();
     assert!(matches!(end, End::Exit));
@@ -195,8 +196,8 @@ pub fn count_positions(input: &str) -> usize {
 }
 
 //TODO is there a faster way? this takes 5s in release and 60s in debug
-pub fn count_possible_block(input: &str) -> usize {
-    let mut looped = 0;
+pub fn part_two(input: &str) -> usize {
+    let mut threads = Vec::new();
     let original = Guard::parse(input);
     for (idx_row, row) in original.map.0.iter().enumerate() {
         for (idx_col, field) in row.iter().enumerate() {
@@ -208,17 +209,15 @@ pub fn count_possible_block(input: &str) -> usize {
             }
             let mut guard = original.clone();
             guard.map.0[idx_row][idx_col].typ = Obstacle;
-            let end = guard.walk();
-            if let End::Loop = end {
-                looped += 1;
-            }
-            //if matches!(end, End::Loop) {
-            //    println!("End {:?}:", end);
-            //    println!("{:?}", guard.map);
-            //}
+            let handle = thread::spawn(move || guard.walk());
+            threads.push(handle);
         }
     }
-    looped
+    threads
+        .into_iter()
+        .map(|handle| handle.join().unwrap())
+        .filter(|end| matches!(end, End::Loop))
+        .count()
 }
 
 #[cfg(test)]
@@ -238,7 +237,7 @@ mod tests {
 ........#.
 #.........
 ......#...";
-        assert_eq!(41, count_positions(input));
-        assert_eq!(6, count_possible_block(input));
+        assert_eq!(41, part_one(input));
+        assert_eq!(6, part_two(input));
     }
 }

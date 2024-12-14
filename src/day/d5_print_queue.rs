@@ -159,12 +159,12 @@ impl Manual {
     }
 }
 
-pub fn count_update(input: &str) -> usize {
+pub fn part_one(input: &str) -> usize {
     let man = Manual::parse(input);
     man.count_middle_update()
 }
 
-pub fn count_corrected(input: &str) -> usize {
+pub fn part_two(input: &str) -> usize {
     let man = Manual::parse(input);
     man.count_corrected()
 }
@@ -205,7 +205,7 @@ mod tests {
 61,13,29
 97,13,75,29,47";
 
-        assert_eq!(143, count_update(input));
-        assert_eq!(123, count_corrected(input));
+        assert_eq!(143, part_one(input));
+        assert_eq!(123, part_two(input));
     }
 }

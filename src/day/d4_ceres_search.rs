@@ -1,4 +1,4 @@
-pub fn count_xmas(input: &str) -> usize {
+pub fn part_one(input: &str) -> usize {
     let mut counter = 0;
     let rows: Vec<_> = input.lines().collect();
     for (r, row) in rows.iter().enumerate() {
@@ -39,7 +39,7 @@ pub fn count_xmas(input: &str) -> usize {
     counter
 }
 
-pub fn count_x_mas(input: &str) -> usize {
+pub fn part_two(input: &str) -> usize {
     let rows: Vec<_> = input.lines().collect();
     let mut counter = 0;
     let row_cnt = rows.len();
@@ -84,7 +84,7 @@ SMSMSASXSS
 SAXAMASAAA
 MAMMMXMMMM
 MXMXAXMASX";
-        assert_eq!(18, count_xmas(input));
-        assert_eq!(9, count_x_mas(input));
+        assert_eq!(18, part_one(input));
+        assert_eq!(9, part_two(input));
     }
 }
