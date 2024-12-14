@@ -1,7 +1,10 @@
-use std::fmt::{Debug, Write};
+use std::{
+    collections::HashSet,
+    fmt::{Debug, Write},
+};
 
 use Direction::*;
-use Field::*;
+use FieldType::*;
 
 #[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
 struct Position(usize, usize);
@@ -17,7 +20,7 @@ impl Position {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 enum Direction {
     Up,
     Down,
@@ -36,11 +39,30 @@ impl Direction {
     }
 }
 
-enum Field {
-    Obstacle,
-    Free { visited: bool },
+#[derive(Clone)]
+struct Field {
+    typ: FieldType,
+    visited: bool,
+    walked: HashSet<Direction>,
 }
 
+impl Field {
+    fn new(typ: FieldType) -> Self {
+        Self {
+            typ,
+            visited: false,
+            walked: Default::default(),
+        }
+    }
+}
+
+#[derive(Clone, Copy)]
+enum FieldType {
+    Obstacle,
+    Free,
+}
+
+#[derive(Clone)]
 struct Map(Vec<Vec<Field>>);
 
 impl Map {
@@ -58,10 +80,10 @@ impl Debug for Map {
         for row in self.0.iter() {
             let line: String = row
                 .iter()
-                .map(|field| match field {
-                    Obstacle => '#',
-                    Free { visited: true } => 'X',
-                    Free { visited: false } => '.',
+                .map(|field| match (field.typ, field.visited) {
+                    (Obstacle, _) => '#',
+                    (Free, true) => 'X',
+                    (Free, false) => '.',
                 })
                 .collect();
             f.write_str(&line)?;
@@ -70,6 +92,8 @@ impl Debug for Map {
         Ok(())
     }
 }
+
+#[derive(Clone)]
 struct Guard {
     map: Map,
     position: Position,
@@ -86,27 +110,27 @@ impl Guard {
                 .chars()
                 .enumerate()
                 .map(|(col_idx, c)| match c {
-                    '.' => Free { visited: false },
-                    '#' => Obstacle,
+                    '.' => Field::new(Free),
+                    '#' => Field::new(Obstacle),
                     '^' => {
                         start = Some(Position(row_idx, col_idx));
                         dir = Some(Up);
-                        Free { visited: true }
+                        Field::new(Free)
                     }
                     '>' => {
                         start = Some(Position(row_idx, col_idx));
                         dir = Some(Right);
-                        Free { visited: true }
+                        Field::new(Free)
                     }
                     'v' => {
                         start = Some(Position(row_idx, col_idx));
                         dir = Some(Down);
-                        Free { visited: true }
+                        Field::new(Free)
                     }
                     '<' => {
                         start = Some(Position(row_idx, col_idx));
                         dir = Some(Left);
-                        Free { visited: true }
+                        Field::new(Free)
                     }
                     _ => unreachable!(),
                 })
@@ -119,38 +143,82 @@ impl Guard {
             direction: dir.unwrap(),
         }
     }
+
+    fn walk(&mut self) -> End {
+        loop {
+            //println!("{:?}", self.map);
+            let field = self.map.get_mut(self.position).unwrap();
+            assert!(matches!(field.typ, Free));
+            field.visited = true;
+            let is_new = field.walked.insert(self.direction);
+            if !is_new {
+                return End::Loop;
+            }
+            self.position = loop {
+                let next_pos = match self.position.next(self.direction) {
+                    Some(pos) => pos,
+                    None => {
+                        return End::Exit;
+                    }
+                };
+                match self.map.get(next_pos).map(|f| f.typ) {
+                    None => {
+                        return End::Exit;
+                    }
+                    Some(Obstacle) => {
+                        self.direction.rotate_90();
+                    }
+                    Some(Free) => break next_pos,
+                };
+            };
+        }
+    }
+}
+
+#[derive(Debug)]
+enum End {
+    Loop,
+    Exit,
 }
 
 pub fn count_positions(input: &str) -> usize {
-    let Guard {
-        mut map,
-        mut position,
-        mut direction,
-    } = Guard::parse(input);
-    loop {
-        //println!("{:?}", &map);
-        assert!(matches!(
-            &map.get(position),
-            Some(Field::Free { visited: _ })
-        ));
-        let field = map.get_mut(position).unwrap();
-        *field = Field::Free { visited: true };
-        let next_pos = position.next(direction);
-        let next_pos = match next_pos.and_then(|pos| map.get(pos)) {
-            None => break,
-            Some(Obstacle) => {
-                direction.rotate_90();
-                position.next(direction).unwrap()
-            }
-            Some(Free { visited: _ }) => next_pos.unwrap(),
-        };
-        position = next_pos;
-    }
-    map.0
+    let mut guard = Guard::parse(input);
+    let end = guard.walk();
+    assert!(matches!(end, End::Exit));
+    guard
+        .map
+        .0
         .iter()
         .flatten()
-        .filter(|field| matches!(field, Free { visited: true }))
+        .filter(|field| field.visited)
         .count()
+}
+
+//TODO is there a faster way? this takes 5s in release and 60s in debug
+pub fn count_possible_block(input: &str) -> usize {
+    let mut looped = 0;
+    let original = Guard::parse(input);
+    for (idx_row, row) in original.map.0.iter().enumerate() {
+        for (idx_col, field) in row.iter().enumerate() {
+            if original.position == Position(idx_row, idx_col) {
+                continue;
+            }
+            if matches!(field.typ, Obstacle) {
+                continue;
+            }
+            let mut guard = original.clone();
+            guard.map.0[idx_row][idx_col].typ = Obstacle;
+            let end = guard.walk();
+            if let End::Loop = end {
+                looped += 1;
+            }
+            //if matches!(end, End::Loop) {
+            //    println!("End {:?}:", end);
+            //    println!("{:?}", guard.map);
+            //}
+        }
+    }
+    looped
 }
 
 #[cfg(test)]
@@ -171,5 +239,6 @@ mod tests {
 #.........
 ......#...";
         assert_eq!(41, count_positions(input));
+        assert_eq!(6, count_possible_block(input));
     }
 }

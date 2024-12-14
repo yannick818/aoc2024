@@ -48,7 +48,7 @@ fn main() {
 
     let input = read_file("input/6.txt");
     measure!("6.1", d6_guard_gallivant::count_positions(&input));
-    //measure!("6.2", d6_guard_gallivant::count_corrected(&input));
+    measure!("6.2", d6_guard_gallivant::count_possible_block(&input));
 }
 
 fn read_file(path: &str) -> String {
