@@ -45,6 +45,10 @@ fn main() {
     let input = read_file("input/5.txt");
     measure!("5.1", d5_print_queue::count_update(&input));
     measure!("5.2", d5_print_queue::count_corrected(&input));
+
+    let input = read_file("input/6.txt");
+    measure!("6.1", d6_guard_gallivant::count_positions(&input));
+    //measure!("6.2", d6_guard_gallivant::count_corrected(&input));
 }
 
 fn read_file(path: &str) -> String {
