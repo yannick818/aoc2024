@@ -1,5 +1,4 @@
-use std::collections::VecDeque;
-
+#[derive(Clone, Copy)]
 struct Rule {
     x: usize,
     y: usize,
@@ -12,6 +11,103 @@ impl Update {
         assert_eq!(self.0.len() % 2, 1);
         let middle = (self.0.len() - 1) / 2;
         *self.0.get(middle).unwrap()
+    }
+
+    fn is_correct(&self, rules: &[Rule]) -> bool {
+        let mut previous = Vec::new();
+        let mut upcoming = self.0.clone();
+        for &page in self.0.iter() {
+            upcoming.remove(0);
+            if !Self::is_valid_state(&previous, &upcoming, page, rules) {
+                return false;
+            }
+            previous.push(page);
+        }
+        true
+    }
+
+    fn is_valid_state(prev: &[usize], queue: &[usize], page: usize, rules: &[Rule]) -> bool {
+        let mut req_prev = Vec::new();
+        let mut req_after = Vec::new();
+        for rule in rules.iter() {
+            if rule.x == page {
+                req_after.push(rule.y);
+            }
+            if rule.y == page {
+                req_prev.push(rule.x);
+            }
+        }
+        for upcom in queue.iter() {
+            if req_prev.contains(upcom) {
+                return false;
+            }
+        }
+        for prev in prev.iter() {
+            if req_after.contains(prev) {
+                return false;
+            }
+        }
+        true
+    }
+
+    fn order(&self, rules: &[Rule]) -> Update {
+        let relevant_rules: Vec<Rule> = rules
+            .iter()
+            .filter(|Rule { x, y }| self.0.contains(x) && self.0.contains(y))
+            .cloned()
+            .collect();
+
+        let state = State::new(&relevant_rules, self.0.clone());
+        state.try_rules().unwrap()
+    }
+}
+
+struct State<'a> {
+    rules: &'a [Rule],
+    update: Vec<usize>,
+    queue: Vec<usize>,
+}
+
+impl<'a> State<'a> {
+    fn new(rules: &'a [Rule], pages: Vec<usize>) -> Self {
+        Self {
+            rules,
+            update: Vec::new(),
+            queue: pages,
+        }
+    }
+
+    fn try_rules(self) -> Option<Update> {
+        let mut update = self.update.clone();
+        update.append(&mut self.queue.clone());
+        let update = Update(update);
+        if update.is_correct(self.rules) {
+            return Some(update);
+        }
+        if self.queue.is_empty() {
+            return None;
+        }
+        let mut new_states = Vec::new();
+        for (idx, &page) in self.queue.iter().enumerate() {
+            let mut queue = self.queue.clone();
+            queue.remove(idx);
+            let mut update = self.update.clone();
+            update.push(page);
+
+            if Update::is_valid_state(&update, &queue, page, self.rules) {
+                new_states.push(State {
+                    rules: self.rules,
+                    update,
+                    queue,
+                });
+            }
+        }
+        for state in new_states.into_iter() {
+            if let Some(update) = state.try_rules() {
+                return Some(update);
+            }
+        }
+        None
     }
 }
 
@@ -44,34 +140,20 @@ impl Manual {
 
     fn count_middle_update(&self) -> usize {
         let mut sum = 0;
-        'update: for update in &self.updates {
-            let mut previous = Vec::new();
-            let mut upcoming: VecDeque<_> = update.0.clone().into();
-            for &page in update.0.iter() {
-                upcoming.pop_front();
-                let mut req_prev = Vec::new();
-                let mut req_after = Vec::new();
-                for rule in self.rules.iter() {
-                    if rule.x == page {
-                        req_after.push(rule.y);
-                    }
-                    if rule.y == page {
-                        req_prev.push(rule.x);
-                    }
-                }
-                for upcom in upcoming.iter() {
-                    if req_prev.contains(upcom) {
-                        continue 'update;
-                    }
-                }
-                for prev in previous.iter() {
-                    if req_after.contains(prev) {
-                        continue 'update;
-                    }
-                }
-                previous.push(page);
+        for update in &self.updates {
+            if update.is_correct(&self.rules) {
+                sum += update.middle();
             }
-            sum += update.middle();
+        }
+        sum
+    }
+
+    fn count_corrected(&self) -> usize {
+        let mut sum = 0;
+        for update in &self.updates {
+            if !update.is_correct(&self.rules) {
+                sum += update.order(&self.rules).middle();
+            }
         }
         sum
     }
@@ -80,6 +162,11 @@ impl Manual {
 pub fn count_update(input: &str) -> usize {
     let man = Manual::parse(input);
     man.count_middle_update()
+}
+
+pub fn count_corrected(input: &str) -> usize {
+    let man = Manual::parse(input);
+    man.count_corrected()
 }
 
 #[cfg(test)]
@@ -119,5 +206,6 @@ mod tests {
 97,13,75,29,47";
 
         assert_eq!(143, count_update(input));
+        assert_eq!(123, count_corrected(input));
     }
 }

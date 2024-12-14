@@ -44,7 +44,7 @@ fn main() {
 
     let input = read_file("input/5.txt");
     measure!("5.1", d5_print_queue::count_update(&input));
-    //measure!("5.2", d5_print_queue::count_x_mas(&input));
+    measure!("5.2", d5_print_queue::count_corrected(&input));
 }
 
 fn read_file(path: &str) -> String {
