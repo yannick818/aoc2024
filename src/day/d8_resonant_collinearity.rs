@@ -1,4 +1,5 @@
 use crate::util::position::*;
+use crate::util::vec2d::Vec2D;
 use std::collections::HashMap;
 use std::fmt::{Display, Write};
 use std::vec;
@@ -78,7 +79,7 @@ impl Position {
 }
 
 struct Map {
-    map: Vec<Vec<Field>>,
+    map: Vec2D<Field>,
     antennas: HashMap<char, Vec<Position>>,
     end: Position,
 }
@@ -110,7 +111,7 @@ impl Map {
         let x = map.len() - 1;
         let y = map[0].len() - 1;
         Map {
-            map,
+            map: Vec2D(map),
             antennas,
             end: Position(x, y),
         }
@@ -127,11 +128,7 @@ impl Map {
                         pos.antidotes_pos(antenna_pos)
                     };
                     for antinode in antinodes.into_iter() {
-                        if let Some(field) = self
-                            .map
-                            .get_mut(antinode.0)
-                            .and_then(|vec| vec.get_mut(antinode.1))
-                        {
+                        if let Some(field) = self.map.get_mut(antinode) {
                             field.antinote = true;
                         }
                     }
@@ -144,8 +141,8 @@ impl Map {
 pub fn part_one(input: &str) -> usize {
     let mut map = Map::parse(input);
     map.find_antinodes(false);
-    //println!("{}", map);
-    map.map
+    //println!("{}", map.map);
+    map.map.0
         .iter()
         .flatten()
         .filter(|field| field.antinote)
@@ -156,28 +153,21 @@ pub fn part_two(input: &str) -> usize {
     let mut map = Map::parse(input);
     map.find_antinodes(true);
     //println!("{}", map);
-    map.map
+    map.map.0
         .iter()
         .flatten()
         .filter(|field| field.antinote)
         .count()
 }
 
-impl Display for Map {
+impl Display for Field {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        for row in self.map.iter() {
-            let line: String = row
-                .iter()
-                .map(|field| match (&field.typ, field.antinote) {
-                    (FieldType::Antenna(c), _) => *c,
-                    (FieldType::Empty, true) => '#',
-                    (FieldType::Empty, false) => '.',
-                })
-                .collect();
-            f.write_str(&line)?;
-            f.write_char('\n')?;
-        }
-        Ok(())
+        let c = match (&self.typ, self.antinote) {
+            (FieldType::Antenna(c), _) => *c,
+            (FieldType::Empty, true) => '#',
+            (FieldType::Empty, false) => '.',
+        };
+        f.write_char(c)
     }
 }
 

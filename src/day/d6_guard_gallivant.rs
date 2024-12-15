@@ -4,7 +4,7 @@ use std::{
     thread,
 };
 
-use crate::util::position::*;
+use crate::util::{position::*, vec2d::Vec2D};
 use Direction::*;
 use FieldType::*;
 
@@ -13,6 +13,17 @@ struct Field {
     typ: FieldType,
     visited: bool,
     walked: HashSet<Direction>,
+}
+
+impl Display for Field {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let c = match (self.typ, self.visited) {
+            (Obstacle, _) => '#',
+            (Free, true) => 'X',
+            (Free, false) => '.',
+        };
+        f.write_char(c)
+    }
 }
 
 impl Field {
@@ -32,39 +43,8 @@ enum FieldType {
 }
 
 #[derive(Clone)]
-struct Map(Vec<Vec<Field>>);
-
-impl Map {
-    fn get(&self, pos: Position) -> Option<&Field> {
-        self.0.get(pos.0).and_then(|vec| vec.get(pos.1))
-    }
-
-    fn get_mut(&mut self, pos: Position) -> Option<&mut Field> {
-        self.0.get_mut(pos.0).and_then(|vec| vec.get_mut(pos.1))
-    }
-}
-
-impl Display for Map {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        for row in self.0.iter() {
-            let line: String = row
-                .iter()
-                .map(|field| match (field.typ, field.visited) {
-                    (Obstacle, _) => '#',
-                    (Free, true) => 'X',
-                    (Free, false) => '.',
-                })
-                .collect();
-            f.write_str(&line)?;
-            f.write_char('\n')?;
-        }
-        Ok(())
-    }
-}
-
-#[derive(Clone)]
 struct Guard {
-    map: Map,
+    map: Vec2D<Field>,
     position: Position,
     direction: Direction,
 }
@@ -107,7 +87,7 @@ impl Guard {
             rows.push(row);
         }
         Guard {
-            map: Map(rows),
+            map: Vec2D(rows),
             position: start.unwrap(),
             direction: dir.unwrap(),
         }
@@ -115,7 +95,7 @@ impl Guard {
 
     fn walk(&mut self) -> End {
         loop {
-            //println!("{:?}", self.map);
+            //println!("{}", self.map);
             let field = self.map.get_mut(self.position).unwrap();
             assert!(matches!(field.typ, Free));
             field.visited = true;
