@@ -6,3 +6,4 @@ pub mod d5_print_queue;
 pub mod d6_guard_gallivant;
 pub mod d7_bridge_repair;
 pub mod d8_resonant_collinearity;
+pub mod d9_disk_fragmenter;

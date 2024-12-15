@@ -26,6 +26,10 @@ macro_rules! measure {
 }
 
 fn main() {
+    let input = read_file("input/9.txt");
+    //measure!("9.2", d9_disk_fragmenter::part_two(&input));
+    measure!("9.1", d9_disk_fragmenter::part_one(&input));
+
     let input = read_file("input/8.txt");
     measure!("8.2", d8_resonant_collinearity::part_two(&input));
     measure!("8.1", d8_resonant_collinearity::part_one(&input));
