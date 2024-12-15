@@ -4,41 +4,9 @@ use std::{
     thread,
 };
 
+use crate::util::position::*;
 use Direction::*;
 use FieldType::*;
-
-#[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
-struct Position(usize, usize);
-
-impl Position {
-    fn next(&self, dir: Direction) -> Option<Position> {
-        match dir {
-            Up => self.0.checked_sub(1).map(|row| Position(row, self.1)),
-            Down => Some(Position(self.0 + 1, self.1)),
-            Right => Some(Position(self.0, self.1 + 1)),
-            Left => self.1.checked_sub(1).map(|col| Position(self.0, col)),
-        }
-    }
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-enum Direction {
-    Up,
-    Down,
-    Right,
-    Left,
-}
-
-impl Direction {
-    fn rotate_90(&mut self) {
-        *self = match &self {
-            Up => Right,
-            Right => Down,
-            Down => Left,
-            Left => Up,
-        }
-    }
-}
 
 #[derive(Clone)]
 struct Field {

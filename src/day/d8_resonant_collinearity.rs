@@ -1,3 +1,4 @@
+use crate::util::position::*;
 use std::collections::HashMap;
 use std::fmt::{Display, Write};
 use std::vec;
@@ -20,9 +21,6 @@ impl Field {
         }
     }
 }
-
-#[derive(Clone, Copy)]
-struct Position(usize, usize);
 
 impl Position {
     fn antidotes_pos(&self, other: Position) -> Vec<Position> {
