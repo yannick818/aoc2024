@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::fmt::{Display, Write};
+use std::vec;
 
 enum FieldType {
     Empty,
@@ -40,11 +41,48 @@ impl Position {
         }
         antinodes
     }
+
+    fn antidotes_pos_resonant(&self, other: Position, end: Position) -> Vec<Position> {
+        let in_range = |x: isize, y: isize| {
+            if !x.is_negative() && !y.is_negative() && x <= end.0 as isize && y <= end.1 as isize {
+                Some(Position(x as usize, y as usize))
+            } else {
+                None
+            }
+        };
+        let mut antinodes = vec![*self, other];
+        let diff_x = other.0 as isize - self.0 as isize;
+        let diff_y = other.1 as isize - self.1 as isize;
+        let mut pos = other;
+        loop {
+            let anti_x = pos.0 as isize + diff_x;
+            let anti_y = pos.1 as isize + diff_y;
+            if let Some(new_pos) = in_range(anti_x, anti_y) {
+                antinodes.push(new_pos);
+                pos = new_pos;
+            } else {
+                break;
+            }
+        }
+        pos = *self;
+        loop {
+            let anti_x = pos.0 as isize - diff_x;
+            let anti_y = pos.1 as isize - diff_y;
+            if let Some(new_pos) = in_range(anti_x, anti_y) {
+                antinodes.push(new_pos);
+                pos = new_pos;
+            } else {
+                break;
+            }
+        }
+        antinodes
+    }
 }
 
 struct Map {
     map: Vec<Vec<Field>>,
     antennas: HashMap<char, Vec<Position>>,
+    end: Position,
 }
 
 impl Map {
@@ -71,15 +109,25 @@ impl Map {
             }
             map.push(row);
         }
-        Map { map, antennas }
+        let x = map.len() - 1;
+        let y = map[0].len() - 1;
+        Map {
+            map,
+            antennas,
+            end: Position(x, y),
+        }
     }
 
-    fn find_antinodes(&mut self) {
+    fn find_antinodes(&mut self, resonance: bool) {
         for (_typ, antenna_positions) in self.antennas.iter() {
             let mut other_antennas = antenna_positions.clone();
             while let Some(pos) = other_antennas.pop() {
                 for &antenna_pos in other_antennas.iter() {
-                    let antinodes = pos.antidotes_pos(antenna_pos);
+                    let antinodes = if resonance {
+                        pos.antidotes_pos_resonant(antenna_pos, self.end)
+                    } else {
+                        pos.antidotes_pos(antenna_pos)
+                    };
                     for antinode in antinodes.into_iter() {
                         if let Some(field) = self
                             .map
@@ -97,8 +145,19 @@ impl Map {
 
 pub fn part_one(input: &str) -> usize {
     let mut map = Map::parse(input);
-    map.find_antinodes();
-    println!("{}", map);
+    map.find_antinodes(false);
+    //println!("{}", map);
+    map.map
+        .iter()
+        .flatten()
+        .filter(|field| field.antinote)
+        .count()
+}
+
+pub fn part_two(input: &str) -> usize {
+    let mut map = Map::parse(input);
+    map.find_antinodes(true);
+    //println!("{}", map);
     map.map
         .iter()
         .flatten()
@@ -144,5 +203,6 @@ mod tests {
 ............
 ............";
         assert_eq!(14, part_one(input));
+        assert_eq!(34, part_two(input));
     }
 }
