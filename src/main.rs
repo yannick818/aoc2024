@@ -12,11 +12,11 @@ macro_rules! measure {
         let duration = start.elapsed();
         let time = if duration.as_secs() / 60 > 1 {
             format!("{} min", duration.as_secs() / 60)
-        } else if duration.as_secs() > 1 {
+        } else if duration.as_secs() > 60 {
             format!("{} s  ", duration.as_secs())
-        } else if duration.as_millis() > 1 {
+        } else if duration.as_millis() > 9 {
             format!("{} ms ", duration.as_millis())
-        } else if duration.as_micros() > 1 {
+        } else if duration.as_micros() > 9 {
             format!("{} us ", duration.as_micros())
         } else {
             format!("{} ns ", duration.as_nanos())
@@ -26,6 +26,10 @@ macro_rules! measure {
 }
 
 fn main() {
+    let input = read_file("input/8.txt");
+    //measure!("8.2", d8_resonant_collinearity::part_two(&input));
+    measure!("8.1", d8_resonant_collinearity::part_one(&input));
+
     let input = read_file("input/7.txt");
     measure!("7.2", d7_bridge_repair::part_two(&input));
     measure!("7.1", d7_bridge_repair::part_one(&input));

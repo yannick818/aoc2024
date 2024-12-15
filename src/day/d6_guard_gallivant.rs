@@ -1,6 +1,6 @@
 use std::{
     collections::HashSet,
-    fmt::{Debug, Write},
+    fmt::{Display, Write},
     thread,
 };
 
@@ -76,7 +76,7 @@ impl Map {
     }
 }
 
-impl Debug for Map {
+impl Display for Map {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for row in self.0.iter() {
             let line: String = row
