@@ -27,7 +27,7 @@ macro_rules! measure {
 
 fn main() {
     let input = read_file("input/9.txt");
-    //measure!("9.2", d9_disk_fragmenter::part_two(&input));
+    measure!("9.2", d9_disk_fragmenter::part_two(&input));
     measure!("9.1", d9_disk_fragmenter::part_one(&input));
 
     let input = read_file("input/8.txt");
