@@ -1,32 +1,46 @@
+use std::collections::HashMap;
 
-enum BlinkResult {
-    Modified,
-    Split(Stone),
-}
-
+#[derive(Hash, PartialEq, Eq, Clone, Copy)]
 struct Stone(usize);
 
+type Cache = HashMap<(Stone, usize), usize>;
+
 impl Stone {
-    fn blink(&mut self) -> BlinkResult {
-        use BlinkResult::*;
+    fn blink(mut self) -> Vec<Stone> {
         if self.0 == 0 {
             self.0 = 1;
-            return Modified;
+            return vec![self];
         }
         let mut number = self.0.to_string();
         let digit_cnt = number.len();
         if number.len() % 2 == 0 {
             let right = number.split_off(digit_cnt / 2);
             self.0 = number.parse().unwrap();
-            return Split(Stone(right.parse().unwrap()));
+            return vec![self, Stone(right.parse().unwrap())];
         }
         self.0 *= 2024;
-        Modified
+        vec![self]
+    }
+
+    fn count(self, blinks: usize, cache: &mut Cache) -> usize {
+        if blinks == 0 {
+            return 1;
+        }
+        if let Some(count) = cache.get(&(self, blinks)) {
+            return *count;
+        }
+        let mut sum = 0;
+        for stone in self.blink() {
+            sum += stone.count(blinks - 1, cache);
+        }
+        cache.insert((self, blinks), sum);
+        sum
     }
 }
 
 struct StoneLine {
     stones: Vec<Stone>,
+    cache: Cache,
 }
 
 impl StoneLine {
@@ -35,34 +49,29 @@ impl StoneLine {
         for number in input.split_whitespace() {
             stones.push(Stone(number.parse().unwrap()));
         }
-        Self { stones }
+        Self {
+            stones,
+            cache: HashMap::new(),
+        }
     }
 
-    fn blink(&mut self) {
-        let mut idx_start = 0;
-        'outer: loop {
-            #[allow(clippy::mut_range_bound)]
-            // we don't want to edit current iteration with idx_start
-            for idx in idx_start..self.stones.len() {
-                let stone = self.stones.get_mut(idx).unwrap();
-                if let BlinkResult::Split(new_stone) = stone.blink() {
-                    // invalidates iteration
-                    self.stones.insert(idx + 1, new_stone);
-                    idx_start = idx + 2;
-                    continue 'outer;
-                }
-            }
-            break;
+    fn blink(&mut self, cnt: usize) -> usize {
+        let mut sum = 0;
+        for stone in self.stones.iter() {
+            sum += stone.count(cnt, &mut self.cache);
         }
+        sum
     }
 }
 
 pub fn part_one(input: &str) -> usize {
     let mut stone_line = StoneLine::parse(input);
-    for _blink in 0..25 {
-        stone_line.blink();
-    }
-    stone_line.stones.len()
+    stone_line.blink(25)
+}
+
+pub fn part_two(input: &str) -> usize {
+    let mut stone_line = StoneLine::parse(input);
+    stone_line.blink(75)
 }
 
 #[cfg(test)]
