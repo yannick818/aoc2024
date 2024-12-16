@@ -142,7 +142,8 @@ pub fn part_one(input: &str) -> usize {
     let mut map = Map::parse(input);
     map.find_antinodes(false);
     //println!("{}", map.map);
-    map.map.0
+    map.map
+        .0
         .iter()
         .flatten()
         .filter(|field| field.antinote)
@@ -153,7 +154,8 @@ pub fn part_two(input: &str) -> usize {
     let mut map = Map::parse(input);
     map.find_antinodes(true);
     //println!("{}", map);
-    map.map.0
+    map.map
+        .0
         .iter()
         .flatten()
         .filter(|field| field.antinote)
