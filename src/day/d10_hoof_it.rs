@@ -23,10 +23,8 @@ impl<'a> Hiker<'a> {
         if *self.map.get(self.pos).unwrap() == 9 {
             return HikeStep::ReachedTop(self.pos);
         }
-        use Direction::*;
         let next_height = self.height + 1;
-        let paths = [Up, Down, Left, Right]
-            .into_iter()
+        let paths = Direction::all()
             .flat_map(|dir| self.pos.next(dir))
             .filter(|&pos| match self.map.get(pos) {
                 None => false,

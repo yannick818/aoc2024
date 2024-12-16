@@ -31,4 +31,8 @@ impl Direction {
             Left => Up,
         }
     }
+
+    pub fn all() -> impl Iterator<Item = Self> {
+        [Up, Left, Right, Down].into_iter()
+    }
 }

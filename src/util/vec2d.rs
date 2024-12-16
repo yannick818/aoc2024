@@ -13,6 +13,12 @@ impl<T> Vec2D<T> {
     pub fn get_mut(&mut self, pos: Position) -> Option<&mut T> {
         self.0.get_mut(pos.0).and_then(|vec| vec.get_mut(pos.1))
     }
+
+    pub fn iter_pos(&self) -> impl Iterator<Item = Position> {
+        let rows = self.0.len();
+        let cols = self.0[0].len();
+        (0..rows).flat_map(move |row| (0..cols).map(move |col| Position(row, col)))
+    }
 }
 
 impl<T: Display> Display for Vec2D<T> {
