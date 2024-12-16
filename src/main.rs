@@ -28,7 +28,7 @@ macro_rules! measure {
 
 fn main() {
     let input = read_file("input/10.txt");
-    //measure!("10.2", d10_hoof_it::part_two(&input));
+    measure!("10.2", d10_hoof_it::part_two(&input));
     measure!("10.1", d10_hoof_it::part_one(&input));
 
     let input = read_file("input/9.txt");

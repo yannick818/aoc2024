@@ -13,15 +13,15 @@ struct Hiker<'a> {
     height: Height,
 }
 
-enum HikeResult<'a> {
+enum HikeStep<'a> {
     ReachedTop(Position),
     Split(Vec<Hiker<'a>>),
 }
 
 impl<'a> Hiker<'a> {
-    fn hike(self) -> HikeResult<'a> {
+    fn hike(self) -> HikeStep<'a> {
         if *self.map.get(self.pos).unwrap() == 9 {
-            return HikeResult::ReachedTop(self.pos);
+            return HikeStep::ReachedTop(self.pos);
         }
         use Direction::*;
         let next_height = self.height + 1;
@@ -38,13 +38,18 @@ impl<'a> Hiker<'a> {
                 height: next_height,
             })
             .collect();
-        HikeResult::Split(paths)
+        HikeStep::Split(paths)
     }
 }
 
 struct Map {
     map: Vec2D<Height>,
     starts: Vec<Position>,
+}
+
+struct HikeResult {
+    reached_tops: usize,
+    unique_ways: usize,
 }
 
 impl Map {
@@ -68,9 +73,9 @@ impl Map {
         }
     }
 
-    fn hike(&self, start: Position) -> usize {
+    fn hike(&self, start: Position) -> HikeResult {
         let mut reached_top = HashSet::new();
-        let mut score = 0;
+        let mut unique_ways = 0;
         let hiker = Hiker {
             map: &self.map,
             pos: start,
@@ -78,13 +83,11 @@ impl Map {
         };
         let mut paths = vec![hiker];
         while let Some(path) = paths.pop() {
-            use HikeResult::*;
+            use HikeStep::*;
             match path.hike() {
                 ReachedTop(top) => {
-                    let new = reached_top.insert(top);
-                    if new {
-                        score += 1;
-                    }
+                    reached_top.insert(top);
+                    unique_ways += 1;
                 }
                 Split(new_paths) => {
                     for new_path in new_paths.into_iter() {
@@ -93,7 +96,10 @@ impl Map {
                 }
             }
         }
-        score
+        HikeResult {
+            reached_tops: reached_top.len(),
+            unique_ways,
+        }
     }
 }
 
@@ -101,8 +107,18 @@ pub fn part_one(input: &str) -> usize {
     let map = Map::parse(input);
     let mut sum = 0;
     for start in map.starts.iter() {
-        let score = map.hike(*start);
+        let score = map.hike(*start).reached_tops;
         sum += score;
+    }
+    sum
+}
+
+pub fn part_two(input: &str) -> usize {
+    let map = Map::parse(input);
+    let mut sum = 0;
+    for start in map.starts.iter() {
+        let rating = map.hike(*start).unique_ways;
+        sum += rating;
     }
     sum
 }
@@ -124,8 +140,9 @@ mod tests {
 10456732";
         assert_eq!(5, {
             let map = Map::parse(input);
-            map.hike(map.starts[0])
+            map.hike(map.starts[0]).reached_tops
         });
         assert_eq!(36, part_one(input));
+        assert_eq!(81, part_two(input));
     }
 }
