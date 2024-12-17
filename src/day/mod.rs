@@ -3,6 +3,7 @@ pub mod d11_plutonian_pebbles;
 pub mod d12_garden_groups;
 pub mod d13_claw_contraption;
 pub mod d14_restroom_redoubt;
+pub mod d15_warehouse_woes;
 pub mod d1_id_check;
 pub mod d2_reports;
 pub mod d3_mull_it_over;
