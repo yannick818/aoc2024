@@ -13,30 +13,39 @@ impl ClawMachine {
     y = ya * a + yb * b
 
     a = (x - xb * b) / xa
+    b = (xa*y-ya*x)/(yb*xa-ya*xb)
     */
-    fn solve(&self) -> Vec<(usize, usize)> {
-        let mut results = Vec::new();
-        for b in 0..=100 {
-            let sub = match self.x.checked_sub(self.x_b * b) {
-                Some(sub) => sub,
-                None => continue,
-            };
-            if sub % self.x_a != 0 {
-                continue;
+    fn solve(&self) -> Option<(usize, usize)> {
+        let divisor = (self.y_b * self.x_a) as isize - (self.y_a * self.x_b) as isize;
+        match divisor {
+            0 => {
+                unreachable!("both buttons move in same direction")
             }
-            let a = sub / self.x_a;
-            if a > 100 {
-                continue;
-            }
-            if self.y_a * a + self.y_b * b == self.y {
-                results.push((a, b));
+            divisor => {
+                let dividend = (self.x_a * self.y) as isize - (self.y_a * self.x) as isize;
+                if dividend % divisor != 0 {
+                    return None;
+                }
+                let b = dividend / divisor;
+                if b < 0 {
+                    return None;
+                }
+                let b = b as usize;
+                let div = match self.x.checked_sub(self.x_b * b) {
+                    Some(div) => div,
+                    None => return None,
+                };
+                if div % self.x_a != 0 {
+                    return None;
+                }
+                let a = div / self.x_a;
+                Some((a, b))
             }
         }
-        results
     }
 }
 
-fn parse(input: &str) -> Vec<ClawMachine> {
+fn parse(input: &str, add: usize) -> Vec<ClawMachine> {
     let mut machines = Vec::new();
     for machine in input.split("\n\n") {
         let mut iter = machine.lines();
@@ -52,8 +61,8 @@ fn parse(input: &str) -> Vec<ClawMachine> {
         let (x, y) = p.split_once(", ").unwrap();
         let y = &y[2..];
         let machine = ClawMachine {
-            x: x.parse().unwrap(),
-            y: y.parse().unwrap(),
+            x: x.parse::<usize>().unwrap() + add,
+            y: y.parse::<usize>().unwrap() + add,
             y_a: y_a.parse().unwrap(),
             y_b: y_b.parse().unwrap(),
             x_a: x_a.parse().unwrap(),
@@ -65,17 +74,22 @@ fn parse(input: &str) -> Vec<ClawMachine> {
 }
 
 pub fn part_one(input: &str) -> usize {
-    let machines = parse(input);
+    let machines = parse(input, 0);
     let mut prize = 0;
     for machine in machines {
-        let mut results: Vec<_> = machine
-            .solve()
-            .into_iter()
-            .map(|(a, b)| (a, b, 3 * a + b))
-            .collect();
-        results.sort_by_key(|(_,_,prize)| *prize);
-        if let Some(cheapest) = results.first() {
-            prize += cheapest.2;
+        if let Some((a, b)) = machine.solve() {
+            prize += 3 * a + b;
+        }
+    }
+    prize
+}
+
+pub fn part_two(input: &str) -> usize {
+    let machines = parse(input, 10000000000000);
+    let mut prize = 0;
+    for machine in machines {
+        if let Some((a, b)) = machine.solve() {
+            prize += 3 * a + b;
         }
     }
     prize
